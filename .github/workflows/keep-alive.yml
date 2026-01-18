@@ -1,0 +1,33 @@
+name: Keep Streamlit App Alive
+
+on:
+  schedule:
+    # 每25分钟运行一次（5:00, 5:25, 5:50, ...）
+    - cron: '*/25 * * * *'
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  keep-alive:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Ping Streamlit App
+        env:
+          # 这里替换为你的实际应用URL
+          STREAMLIT_URL: "https://mental-health-assessment.streamlit.app/"
+        run: |
+          echo "开始访问 Streamlit 应用..."
+          echo "URL: $STREAMLIT_URL"
+          echo "时间: $(date)"
+          
+          # 使用 curl 访问应用
+          response_code=$(curl -s -o /dev/null -w "%{http_code}" -m 30 "$STREAMLIT_URL")
+          
+          if [ "$response_code" = "200" ]; then
+            echo "✅ 成功访问应用 (状态码: $response_code)"
+          else
+            echo "⚠️  应用返回非200状态码: $response_code"
+            echo "注意：这可能是因为应用正在重启，属于正常现象"
+          fi
+          
+          echo "完成时间: $(date)"
