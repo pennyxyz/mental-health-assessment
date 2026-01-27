@@ -1,6 +1,3 @@
-cd /home/admin/mental-health-assessment-main
-cp app.py app.py.backup
-cat > app.py << 'EOF'
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -533,7 +530,7 @@ def run_comprehensive_assessment():
     else: overall_risk = 'green'
 
     assessment_result = {
-        'timestamp': datetime.now().strftime("%Y-%m-d %H:%M:%S"),
+        'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         'scores': {q_id: scores[q_id] for q_id in QUESTIONNAIRES},
         'risk_points': risk_points,
         'overall_risk': overall_risk,
@@ -736,4 +733,3 @@ else:
             else:
                 st.info(f"⬜ {q_info['name']}")
                 st.write("待完成")
-EOF
