@@ -1,3 +1,6 @@
+cd /home/admin/mental-health-assessment-main
+cp app.py app.py.backup
+cat > app.py << 'EOF'
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -7,7 +10,6 @@ import os
 import sys
 import uuid
 
-# ==================== 数据存储设置 ====================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
 DATA_FILE = os.path.join(DATA_DIR, "submissions.json")
@@ -15,7 +17,6 @@ DATA_FILE = os.path.join(DATA_DIR, "submissions.json")
 if not os.path.exists(DATA_DIR):
     os.makedirs(DATA_DIR, exist_ok=True)
 
-# ==================== Streamlit应用配置 ====================
 st.set_page_config(
     page_title="心理健康评估系统",
     page_icon="🧠",
@@ -45,7 +46,6 @@ def init_session_state():
 
 init_session_state()
 
-# ==================== 问卷数据定义 ====================
 QUESTIONNAIRES = {
     'CDRISC': {
         'name': '心理韧性量表 CD-RISC',
@@ -146,7 +146,6 @@ QUESTIONNAIRES = {
     }
 }
 
-# ==================== 计分器函数 ====================
 def calculate_cdrisc_score(responses):
     total = 0
     factor_scores = {'tough':0, 'strength':0, 'optimism':0}
@@ -195,7 +194,6 @@ def calculate_scl90_score(responses):
         if valid_count > 0: factor_scores[factor] = round(item_total / valid_count, 2)
     return {'total': total, 'posNum': pos_num, 'factors': factor_scores}
 
-# ==================== 数据存储函数 ====================
 def save_submission():
     if not all(st.session_state.questionnaire_completed.values()):
         return False
@@ -288,7 +286,6 @@ def export_to_excel():
     df = pd.DataFrame(rows)
     return df
 
-# ==================== 用户信息收集组件 ====================
 def show_user_info_form():
     st.header("个人信息")
     st.write("请在开始评估前填写以下信息（可选）")
@@ -314,7 +311,6 @@ def show_user_info_form():
             else:
                 st.warning("至少填写姓名或编号中的一项")
 
-# ==================== 管理员功能 ====================
 def show_admin_panel():
     st.title("📊 数据管理面板")
     
@@ -413,7 +409,6 @@ def show_admin_panel():
         st.session_state.admin_mode = False
         st.rerun()
 
-# ==================== 问卷显示函数 ====================
 def show_questionnaire(questionnaire_id):
     q_info = QUESTIONNAIRES[questionnaire_id]
     st.header(q_info['name'])
@@ -513,7 +508,6 @@ def show_questionnaire(questionnaire_id):
                 st.session_state.show_success_message = True
                 st.rerun()
 
-# ==================== 综合评估函数 ====================
 def run_comprehensive_assessment():
     scores = st.session_state.questionnaire_scores
     for q_id, completed in st.session_state.questionnaire_completed.items():
@@ -539,7 +533,7 @@ def run_comprehensive_assessment():
     else: overall_risk = 'green'
 
     assessment_result = {
-        'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        'timestamp': datetime.now().strftime("%Y-%m-d %H:%M:%S"),
         'scores': {q_id: scores[q_id] for q_id in QUESTIONNAIRES},
         'risk_points': risk_points,
         'overall_risk': overall_risk,
@@ -631,7 +625,6 @@ def display_assessment_result(result):
             st.session_state.assessment_result = None
             st.rerun()
 
-# ==================== 侧边栏 ====================
 with st.sidebar:
     st.title("🧠 心理健康评估系统")
     completed = sum(st.session_state.questionnaire_completed.values())
@@ -655,7 +648,6 @@ with st.sidebar:
         init_session_state()
         st.rerun()
     
-    # 使用 markdown 创建分隔线
     st.markdown("---")
     st.subheader("心理测评量表")
     
@@ -664,9 +656,7 @@ with st.sidebar:
         status = "✅" if completed else "⬜"
         score_disp = f" (已评分)" if completed else ""
         
-        if st.button(f"{status} {q_info['name']}{score_disp}", 
-                     key=f"btn_{q_id}",
-                     use_container_width=True):
+        if st.button(f"{status} {q_info['name']}{score_disp}", key=f"btn_{q_id}"):
             st.session_state.current_questionnaire = q_id
             st.session_state.show_success_message = False
             st.rerun()
@@ -674,9 +664,7 @@ with st.sidebar:
     st.markdown("---")
     
     all_done = all(st.session_state.questionnaire_completed.values())
-    if st.button("运行综合评估测试", 
-                 disabled=not all_done,
-                 key="btn_assessment"):
+    if st.button("运行综合评估测试", disabled=not all_done, key="btn_assessment"):
         if all_done:
             result = run_comprehensive_assessment()
             if result:
@@ -684,12 +672,11 @@ with st.sidebar:
                 st.rerun()
     
     st.markdown("---")
-    if st.button("📊 管理员数据导出", type="secondary"):
+    if st.button("📊 管理员数据导出"):
         st.session_state.admin_mode = True
         st.session_state.current_questionnaire = None
         st.rerun()
 
-# ==================== 主页面逻辑 ====================
 st.title("心理健康评估系统")
 
 if st.session_state.admin_mode:
@@ -749,3 +736,4 @@ else:
             else:
                 st.info(f"⬜ {q_info['name']}")
                 st.write("待完成")
+EOF
